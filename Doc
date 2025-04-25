@@ -1,0 +1,27 @@
+///Header
+
+Doit Etablir le temps dispo et le temps néscesaire ainsi que les features que l'on compte implémentées de préférence doit etre esthétique.
+
+6) Système d'équation
+Résolution de systèmes d’équations de n équations à n inconnues. Dans ce projet, après avoir
+saisi les valeurs des coefficients, il sera lancé la méthode classique de Cramer qui consiste à
+utiliser les déterminants et la méthode du pivot. Les résultats des méthodes seront comparés.
+
+Video de 30'' néscessaire .
+
+Estimé son propre cout et prix .
+
+///Fin Header
+
+Temps dispo:
+ - 9*1h15 en cours de TP Math Info II
+ - 3 heures tout les soirs en semaine sauf exceptions ce qui représente 3*10  heure
+ donc au total 41h15
+
+Temps estimé  :
+ - 3 heures pour répondre au cahier des charges minimal
+ - Une heure de plus pour avoir une app console clean
+ - 3-4 heures pour pouvoir lire des fichiers et générer des fichiers de réponse en LaTex
+ - 2 heures de debugging et de tests
+ - 2 heures de debugging supplémentaire en cas de probléme
+ donc au total 12 heures

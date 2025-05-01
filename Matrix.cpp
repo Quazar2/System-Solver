@@ -1,5 +1,6 @@
 #include "Matrix.h"
-
+#include <cstring>
+#include "conio.h"
 using namespace std;
 
 int Pow(int a, int b){
@@ -24,6 +25,113 @@ Matrix_t::Matrix_t(int w , int h) : width(w), height(h), ptr(nullptr){
 Matrix_t::Matrix_t(const Matrix_t& m) : width(m.width) , height(m.height) , ptr(nullptr){
 	ptr = (double*)malloc(m.width*m.height*sizeof(double));
 	memcpy(ptr,m.ptr,m.width*m.height*sizeof(double));
+}
+
+ostream& operator<<(ostream& os,Matrix_t& m){
+	for(int i =0;i<m.height;i++){
+			for(int j=0;j<m.width;j++){
+				printf("%.6g\t",m.ptr[i*m.width+j]);
+		}
+			printf("\n");
+	}
+	return os;
+}
+
+void Matrix_t::editor(){
+  char c = 'a';
+  int size = width;
+  int cursor_x=0;
+  int cursor_y=0;
+  int cell_x = 0;
+  int cell_y = 0;
+  double** grid =(double**) malloc(size*sizeof(double*));
+  for(int i=0;i<size;i++){
+	  grid[i] = (double*) malloc(size*sizeof(double));
+	  memcpy(grid[i],&ptr[i],size*sizeof(double));
+  }
+  bool EDITING = false;
+  char* buffer =(char*) malloc(1024*sizeof(char));
+  int buff_head =0;
+  clrscr();
+	for(int i =0;i<size;i++){
+		for(int j=0;j<size;j++){
+			printf("%.6g\t",grid[i][j]);
+		}
+		printf("\n");
+	}
+	printf("s= quit | h = left | l = right | k = up | j = down\n");
+  while(1==1){
+    if(kbhit()){
+		c= getch();
+		if (c=='s') break;
+		if(c=='\n'){
+			if(EDITING){
+				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				memset(buffer,'\0',1024);
+				buff_head=0;
+			}
+			EDITING = !EDITING;
+		}else if(c=='+'){
+			grid =(double**) realloc(grid,(size+1)*sizeof(double*));
+			grid[size]=nullptr;
+			for(int i=0;i<size+1;i++){
+				grid[i] = (double*) realloc(grid[i],(size+1)*sizeof(double));
+			}
+			for(int i=0;i<size+1;i++){
+				grid[size][i]=0;
+			}
+			size+=1;
+		}
+		else if(c=='-'){
+			grid =(double**) realloc(grid,(size-1)*sizeof(double*));
+			for(int i=0;i<size-1;i++){
+				grid[i] = (double*) realloc(grid[i],(size-1)*sizeof(double));
+			}
+			size -= 1;
+		}else if(EDITING ){
+			if(((c>='0') & (c<='9'))|(c=='.') & (buff_head<1024)){
+				buffer[buff_head]=c;
+				buff_head++;
+				cursor_x++;
+			}else if((c=='\b')&(buff_head>0)){
+				c='\0';
+				buff_head--;
+				cursor_x--;
+			}
+		}else if(c=='l'&cell_x<size-1){
+			cell_x++;
+		}else if(c=='h'&cell_x>0){
+			cell_x--;
+		}else if(c=='j'&cell_y<size-1){
+			cell_y++;
+		}else if(c=='k'&cell_y>0){
+			cell_y--;
+		}
+		clrscr();
+		for(int i =0;i<size;i++){
+			for(int j=0;j<size;j++){
+				if(EDITING&cell_x==j&cell_y==i){
+					printf("%s\t",buffer);
+				}else{
+				printf("%3.6lg\t",grid[i][j]);
+				}
+			}
+			printf("\n");
+		}
+		printf("s= quit | h = left | l = right | k = up | j = down\n");
+		cursor_x=cell_x*8+4;
+		cursor_y=cell_y;
+		printf("%d",cursor_y);
+		gotoxy(cursor_x,cursor_y+1);
+	}
+ }
+	ptr =(double*) realloc(ptr,size*size*sizeof(double));
+	for(int i=0;i<size;i++){
+		memcpy(&ptr[i*size],grid[i],size*sizeof(double));
+	}
+	width = size;
+	height = size;
+	clrscr();
 }
 
 Matrix_t Matrix_t::trans(){
@@ -135,6 +243,21 @@ Matrix_t Matrix_t::Solve(Matrix_t& b){
 	}
 }
 
+Matrix_t Matrix_t::Solve_Pivot(Matrix_t& b){
+	if(det()!=0){
+		Matrix_t temp = Matrix_t(*this);
+		Matrix_t solut = Matrix_t(1,b.height);
+		for(int i=0;i<b.height;i++){
+			for(int j =0;j<b.height;j++){
+				temp.ptr[i+j*width]= b.ptr[j];
+			}
+			solut.ptr[i]=temp.det()/det();
+		}
+		return solut;
+	}
+	return NULL;
+
+}
 Matrix_t Matrix_t::Propres(){
 
 }

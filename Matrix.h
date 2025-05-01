@@ -17,8 +17,11 @@ public:
 	Matrix_t Commatrix();
 	Matrix_t Inverse();
 	Matrix_t Solve(Matrix_t& b);
+	Matrix_t Solve_Pivot(Matrix_t& b);
+	void editor();
 	Matrix_t Propres();
 	Matrix_t Sous_mat(int w_1 ,int h_1);
+	friend ostream& operator<<(ostream& os,Matrix_t& m);
 	Matrix_t& operator*=(double d);
 	Matrix_t& operator*(double d);
 	Matrix_t& operator/(double d);

@@ -1,5 +1,11 @@
 #include <math.h>
 #include <iostream>
+#ifndef _WIN32
+#include "conio.h"
+#else
+#include <conio.h>
+#endif
+
 using namespace std;
 
 class Matrix_t{

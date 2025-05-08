@@ -3,7 +3,18 @@
 #ifndef _WIN32
 #include "conio.h"
 #else
+void clrscr() {
+	system("cls");
+}
+#include <windows.h>
 #include <conio.h>
+void gotoxy(int x, int y)
+{
+	COORD coo;
+	coo.X = x;
+	coo.Y = y-1;
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coo);
+}
 #endif
 using namespace std;
 
@@ -55,68 +66,93 @@ int Matrix_t::get_height(){
 	return height;
 }
 void Matrix_t::v_editor(int h){
-  char c = 'a';
-  int size = h;
-  int cursor_x=0;
-  int cursor_y=0;
-  int cell_y = 0;
-  double* grid =(double*) malloc(size*sizeof(double));
-  bool EDITING = false;
-  char* buffer =(char*) malloc(1024*sizeof(char));
-  int buff_head =0;
-  clrscr();
-	for(int i =0;i<size;i++){
-		printf("%.6g\t",grid[i]);
+	char c = 'a';
+	int size = h;
+	int cursor_x = 0;
+	int cursor_y = 0;
+	int cell_x = 0;
+	int cell_y = 0;
+	double* grid = (double*)malloc(h * sizeof(double));
+	memset(grid, 0, sizeof(double) * size);
+	bool EDITING = false;
+	char* buffer = (char*)malloc(1024 * sizeof(char));
+	memset(buffer, '\0', 1024);
+	int buff_head = 0;
+	clrscr();
+	printf("Please input your system's B matrix in this Matrix\n\n");
+		for (int j = 0; j < size; j++) {
+			printf("%.6g\n", grid[j]);
+		}
 		printf("\n");
-	}
-	printf("s= quit | h = left | l = right | k = up | j = down\n");
-  while(1==1){
-    if(kbhit()){
-		c= getch();
-		if (c=='s') break;
-		if(c=='\n'){
-			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y]);
-				memset(buffer,'\0',1024);
-				buff_head=0;
+	printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+
+	while (1 == 1) {
+		if (_kbhit()) {
+			c = _getch();
+			if (c == 's') { 
+				
+				break; 
 			}
-			EDITING = !EDITING;
-		}else if(EDITING ){
-			if(((c>='0') & (c<='9'))|(c=='.') & (buff_head<1024)){
-				buffer[buff_head]=c;
+			if (c == '\n' || c == '\r') {
+				if (EDITING) {
+					sscanf_s(buffer, "%lf", &grid[cell_y]);
+					memset(buffer, '\0', 1024);
+					buff_head = 0;
+				}
+				EDITING = !EDITING;
+			}
+			else if (((c == '-' && buff_head == 0) || ((c >= '0') && (c <= '9')) || (c == '.')) && (buff_head < 1024)) {
+				EDITING = true;
+				buffer[buff_head] = c;
 				buff_head++;
 				cursor_x++;
-			}else if((c=='\b')&(buff_head>0)){
-				c='\0';
+			}
+			else if ((c == '\b') && (buff_head > 0)) {
+				c = '\0';
 				buff_head--;
 				cursor_x--;
+			}
+			else if ((c == 'j' || c==66) && cell_y < size - 1) {
+				if (EDITING) {
+					sscanf_s(buffer, "%lf", &grid[cell_y]);
+					memset(buffer, '\0', 1024);
+					buff_head = 0;
+					EDITING = !EDITING;
 				}
-			}else if(c=='j'&cell_y<size-1){
-			cell_y++;
-		}else if(c=='k'&cell_y>0){
-			cell_y--;
-		}
-		clrscr();
-		for(int i =0;i<size;i++){
-				if(EDITING&cell_y==i){
-					printf("%s\t",buffer);
-				}else{
-				printf("%3.6lg\t",grid[i]);
+				cell_y++;
+			}
+			else if ((c == 'k' || c == 65) && cell_y > 0) {
+				if (EDITING) {
+					sscanf_s(buffer, "%lf", &grid[cell_y]);
+					memset(buffer, '\0', 1024);
+					buff_head = 0;
+					EDITING = !EDITING;
 				}
-			printf("\n");
+				cell_y--;
+			}
+			clrscr();
+			printf("Please input your system's B matrix in this Matrix\n\n");
+			for (int j = 0; j < size; j++) {
+				if (EDITING && cell_y == j) {
+					printf("%s\n", buffer);
+				}
+				else {
+					printf("%.6lg\n", grid[j]);
+				}
+			}
+			
+			printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+			cursor_x = cell_x * 8 + 4;
+			cursor_y = cell_y;
+			printf("%c", c);
+			gotoxy(cursor_x, cursor_y + 3);
 		}
-		printf("s= quit | h = left | l = right | k = up | j = down\n");
-		cursor_x=4;
-		cursor_y=cell_y;
-		printf("%d",cursor_y);
-		gotoxy(cursor_x,cursor_y+1);
 	}
- }
-	ptr =(double*) realloc(ptr,size*size*sizeof(double));
-	for(int i=0;i<size;i++){
-		memcpy(&ptr[i*size],grid,size*sizeof(double));
+	ptr = (double*)realloc(ptr,size * sizeof(double));
+	for (int i = 0; i < size; i++) {
+		memcpy(ptr, grid, size * sizeof(double));
 	}
-	width =1;
+	width = 1;
 	height = size;
 	clrscr();
 }
@@ -134,101 +170,115 @@ void Matrix_t::editor (){
   }
   bool EDITING = false;
   char* buffer =(char*) malloc(1024*sizeof(char));
+  memset(buffer, '\0', 1024);
   int buff_head =0;
   clrscr();
-	for(int i =0;i<size;i++){
-		for(int j=0;j<size;j++){
-			printf("%.6g\t",grid[i][j]);
-		}
-		printf("\n");
-	}
-	printf("s = quit | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+  printf("Please input your n * n sytem in this Matrix\n\n");
+  for (int i = 0; i < size; i++) {
+	  for (int j = 0; j < size; j++) {
+		  if (EDITING && cell_x == j && cell_y == i) {
+			  printf("%s\t", buffer);
+		  }
+		  else {
+			  printf("%.6lg\t", grid[i][j]);
+		  }
+	  }
+	  printf("\n");
+  }
+  printf("\ns = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
   while(1==1){
-    if(kbhit()){
-		c= getch();
+    if(_kbhit()){
+		c= _getch();
 		if (c=='s') break;
-		if(c=='\n'){
+		if(c=='\n'||c=='\r') {
 			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
 				buff_head=0;
 			}
 			EDITING = !EDITING;
-		}else if((!EDITING)&c=='+'){
+		}else if((!EDITING)&&c=='+'){
 			grid =(double**) realloc(grid,(size+1)*sizeof(double*));
 			grid[size]=nullptr;
 			for(int i=0;i<size+1;i++){
 				grid[i] = (double*) realloc(grid[i],(size+1)*sizeof(double));
+				
 			}
-			for(int i=0;i<size+1;i++){
-				grid[size][i]=0;
+			for (int j = 0; j <= size; j++) {
+				for (int i = 0; i < size + 1; i++) {
+					grid[j][i] = 0;
+				}
 			}
 			size+=1;
 		}
-		else if((!EDITING)&c=='-'){
+		else if((!EDITING)&&c=='-'){
 			grid =(double**) realloc(grid,(size-1)*sizeof(double*));
 			for(int i=0;i<size-1;i++){
 				grid[i] = (double*) realloc(grid[i],(size-1)*sizeof(double));
 			}
 			size -= 1;
-		}else if(((EDITING&c=='-'&buff_head==0)|((c>='0') & (c<='9'))|(c=='.')) & (buff_head<1024)){
+		}else if(((EDITING&&c=='-'&&buff_head==0)||((c>='0') && (c<='9'))||(c=='.')) && (buff_head<1024)){
 			    EDITING = true;
 				buffer[buff_head]=c;
 				buff_head++;
 				cursor_x++;
-			}else if((c=='\b')&(buff_head>0)){
+			}else if((c=='\b')&&(buff_head>0)){
 				c='\0';
 				buff_head--;
 				cursor_x--;
-			}else if(c=='l'&cell_x<size-1){
+			}
+			else if ((c == 'l') && cell_x < size - 1) {
 			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
 				buff_head=0;
+				EDITING = !EDITING;
 			}
-			EDITING = !EDITING;
 			cell_x++;
-		}else if(c=='h'&cell_x>0){
+		}
+			else if ((c == 'h') && cell_x > 0) {
 			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
 				buff_head=0;
+				EDITING = !EDITING;
 			}
-			EDITING = !EDITING;
+			
 			cell_x--;
-		}else if(c=='j'&cell_y<size-1){
+		}else if((c=='j') && cell_y<size - 1) {
 			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
 				buff_head=0;
+				EDITING = !EDITING;
 			}
-			EDITING = !EDITING;
 			cell_y++;
-		}else if(c=='k'&cell_y>0){
+		}else if((c=='k') && cell_y>0) {
 			if(EDITING){
-				sscanf(buffer,"%lf",&grid[cell_y][cell_x]);
+				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
 				buff_head=0;
+				EDITING = !EDITING;
 			}
-			EDITING = !EDITING;
 			cell_y--;
 		}
 		clrscr();
+		printf("Please input your n * n sytem in this Matrix\n\n");
 		for(int i =0;i<size;i++){
 			for(int j=0;j<size;j++){
-				if(EDITING&cell_x==j&cell_y==i){
+				if(EDITING&&cell_x==j&&cell_y==i){
 					printf("%s\t",buffer);
 				}else{
-				printf("%3.6lg\t",grid[i][j]);
+				printf("%.6lg\t",grid[i][j]);
 				}
 			}
 			printf("\n");
 		}
-		printf("s= quit | h = left | l = right | k = up | j = down\n");
+		printf("\ns = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
 		cursor_x=cell_x*8+4;
 		cursor_y=cell_y;
-		printf("%d",cursor_y);
-		gotoxy(cursor_x,cursor_y+1);
+		printf("%c",c);
+		gotoxy(cursor_x,cursor_y+3);
 	}
  }
 	ptr =(double*) realloc(ptr,size*size*sizeof(double));
@@ -325,6 +375,7 @@ Matrix_t Matrix_t::operator+=(const Matrix_t& d){
 			}
 		}
 	}
+	return *this;
 }
 Matrix_t Matrix_t::operator+(const Matrix_t& d){
 	Matrix_t mat  = Matrix_t(*this);
@@ -379,5 +430,5 @@ Matrix_t Matrix_t::Solve_Pivot(Matrix_t& b){
 
 }
 Matrix_t Matrix_t::Propres(){
-
+	return NULL;
 }

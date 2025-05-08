@@ -1,7 +1,6 @@
 #include "Matrix.h"
 #include <cstring>
 #ifndef _WIN32
-#include "conio.h"
 #else
 void clrscr() {
 	system("cls");
@@ -91,6 +90,7 @@ void Matrix_t::v_editor(int h){
 			c = _getch();
 			if (c == 's') { 
 				
+				sscanf_s(buffer, "%lf", &grid[cell_y]);
 				break; 
 			}
 			if (c == '\n' || c == '\r') {
@@ -189,7 +189,10 @@ void Matrix_t::editor (){
   while(1==1){
     if(_kbhit()){
 		c= _getch();
-		if (c=='s') break;
+		if (c=='s'){
+			sscanf_s(buffer, "%lf", &grid[cell_y][cell_x]);
+			break;
+		}
 		if(c=='\n'||c=='\r') {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);

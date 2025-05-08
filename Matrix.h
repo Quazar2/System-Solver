@@ -2,8 +2,10 @@
 #include <iostream>
 #ifndef _WIN32
 #include "conio.h"
+#define sscanf_s sscanf
+#define _getch getch
+#define _kbhit kbhit
 #else
-#include <conio.h>
 #endif
 
 using namespace std;

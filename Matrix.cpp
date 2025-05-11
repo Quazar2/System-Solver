@@ -36,14 +36,14 @@ Matrix_t::~Matrix_t(){
 }
 
 Matrix_t::Matrix_t(int c) : width(c), height(c), ptr(nullptr){
-	ptr = (double*)malloc(c*c*sizeof(double));
+	ptr = (double*)calloc(c*c,sizeof(double));
 }
 
 Matrix_t::Matrix_t(int w , int h) : width(w), height(h), ptr(nullptr){
-	ptr = (double*)malloc(w*h*sizeof(double));
+	ptr = (double*)calloc(w*h,sizeof(double));
 }
 Matrix_t::Matrix_t(const Matrix_t& m) : width(m.width) , height(m.height) , ptr(nullptr){
-	ptr = (double*)malloc(m.width*m.height*sizeof(double));
+	ptr = (double*)calloc(m.width*m.height,sizeof(double));
 	memcpy(ptr,m.ptr,m.width*m.height*sizeof(double));
 }
 
@@ -71,11 +71,9 @@ void Matrix_t::v_editor(int h){
 	int cursor_y = 0;
 	int cell_x = 0;
 	int cell_y = 0;
-	double* grid = (double*)malloc(h * sizeof(double));
-	memset(grid, 0, sizeof(double) * size);
+	double* grid = (double*)calloc(h, sizeof(double));
 	bool EDITING = false;
-	char* buffer = (char*)malloc(1024 * sizeof(char));
-	memset(buffer, '\0', 1024);
+	char* buffer = (char*)calloc(1024, sizeof(char));
 	int buff_head = 0;
 	clrscr();
 	printf("Please input your system's B matrix in this Matrix\n\n");
@@ -85,6 +83,7 @@ void Matrix_t::v_editor(int h){
 		printf("\n");
 	printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
 
+	gotoxy(cursor_x, cursor_y + 3);
 	while (1 == 1) {
 		if (_kbhit()) {
 			c = _getch();
@@ -141,6 +140,7 @@ void Matrix_t::v_editor(int h){
 				}
 			}
 			
+			printf("\n");
 			printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
 			cursor_x = cell_x * 8 + 4;
 			cursor_y = cell_y;
@@ -155,6 +155,8 @@ void Matrix_t::v_editor(int h){
 	width = 1;
 	height = size;
 	clrscr();
+	free(buffer);
+	free(grid);
 }
 void Matrix_t::editor (){
   char c = 'a';
@@ -291,6 +293,11 @@ void Matrix_t::editor (){
 	width = size;
 	height = size;
 	clrscr();
+	free(buffer);
+	  for(int i=0;i<size;i++){
+		  free(grid[i]);
+	  }
+	free(grid);
 }
 
 Matrix_t Matrix_t::trans(){
@@ -388,8 +395,6 @@ Matrix_t Matrix_t::operator+(const Matrix_t& d){
 
 Matrix_t Matrix_t::operator*(Matrix_t& d){
 	Matrix_t res = Matrix_t(d.width,height);
-	cout<<*this<<endl;
-	cout<<d<<endl;
 	for(int h =0;h<height;h++){
 		for(int i = 0;i<d.width;i++){
 			res.ptr[i+h*(d.width)]=0;
@@ -398,7 +403,6 @@ Matrix_t Matrix_t::operator*(Matrix_t& d){
 			}
 		}
 	}
-	cout<<res<<endl;
 	return res;
 }
 
@@ -409,7 +413,7 @@ Matrix_t Matrix_t::Inverse(){
 
 
 Matrix_t Matrix_t::Solve(Matrix_t& b){
-	if(det()!=0){
+	if(det()>0.00001||det()<-0.00001){
 		Matrix_t inv = Inverse();
 		return inv*b;
 	}else{
@@ -418,7 +422,7 @@ Matrix_t Matrix_t::Solve(Matrix_t& b){
 }
 
 Matrix_t Matrix_t::Solve_Pivot(Matrix_t& b){
-	if(det()!=0){
+	if(det()>0.00001||det()<-0.00001){
 		Matrix_t temp = Matrix_t(*this);
 		Matrix_t solut = Matrix_t(1,b.height);
 		for(int i=0;i<b.height;i++){
@@ -426,6 +430,9 @@ Matrix_t Matrix_t::Solve_Pivot(Matrix_t& b){
 				temp.ptr[i+j*width]= b.ptr[j];
 			}
 			solut.ptr[i]=temp.det()/det();
+			for(int j =0;j<b.height;j++){
+				temp.ptr[i+j*width]= ptr[i+j*width];
+			}
 		}
 		return solut;
 	}

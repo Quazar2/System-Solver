@@ -81,12 +81,15 @@ void Matrix_t::v_editor(int h){
 			printf("%.6g\n", grid[j]);
 		}
 		printf("\n");
-	printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+	printf("s = confirm  | k = up | j = down | enter = edit \n");
 
 	gotoxy(cursor_x, cursor_y + 3);
 	while (1 == 1) {
 		if (_kbhit()) {
 			c = _getch();
+			while(c==91|c==27){
+				c= _getch();
+			}
 			if (c == 's') { 
 				
 				sscanf_s(buffer, "%lf", &grid[cell_y]);
@@ -106,8 +109,8 @@ void Matrix_t::v_editor(int h){
 				buff_head++;
 				cursor_x++;
 			}
-			else if ((c == '\b') && (buff_head > 0)) {
-				c = '\0';
+			else if ((c == '\b' || c==127) && (buff_head > 0)) {
+				buffer[buff_head-1] = '\0';
 				buff_head--;
 				cursor_x--;
 			}
@@ -144,7 +147,7 @@ void Matrix_t::v_editor(int h){
 			printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
 			cursor_x = cell_x * 8 + 4;
 			cursor_y = cell_y;
-			printf("%c", c);
+			printf("%d", c);
 			gotoxy(cursor_x, cursor_y + 3);
 		}
 	}
@@ -165,14 +168,13 @@ void Matrix_t::editor (){
   int cursor_y=0;
   int cell_x = 0;
   int cell_y = 0;
-  double** grid =(double**) malloc(size*sizeof(double*));
+  double** grid =(double**) calloc(size,sizeof(double*));
   for(int i=0;i<size;i++){
-	  grid[i] = (double*) malloc(size*sizeof(double));
+	  grid[i] = (double*) calloc(size,sizeof(double));
 	  memcpy(grid[i],&ptr[i],size*sizeof(double));
   }
   bool EDITING = false;
-  char* buffer =(char*) malloc(1024*sizeof(char));
-  memset(buffer, '\0', 1024);
+  char* buffer =(char*) calloc(1024,sizeof(char));
   int buff_head =0;
   clrscr();
   printf("Please input your n * n sytem in this Matrix\n\n");
@@ -191,6 +193,9 @@ void Matrix_t::editor (){
   while(1==1){
     if(_kbhit()){
 		c= _getch();
+		while(c==91|c==27){
+			c= _getch();
+		}
 		if (c=='s'){
 			sscanf_s(buffer, "%lf", &grid[cell_y][cell_x]);
 			break;
@@ -227,12 +232,12 @@ void Matrix_t::editor (){
 				buffer[buff_head]=c;
 				buff_head++;
 				cursor_x++;
-			}else if((c=='\b')&&(buff_head>0)){
-				c='\0';
+			}else if((c=='\b'||c==127)&&(buff_head>0)){
+				buffer[buff_head-1] = '\0';
 				buff_head--;
 				cursor_x--;
 			}
-			else if ((c == 'l') && cell_x < size - 1) {
+			else if ((c == 'l'||c==67) && cell_x < size - 1) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -241,7 +246,7 @@ void Matrix_t::editor (){
 			}
 			cell_x++;
 		}
-			else if ((c == 'h') && cell_x > 0) {
+			else if ((c == 'h'||c==68) && cell_x > 0) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -250,7 +255,7 @@ void Matrix_t::editor (){
 			}
 			
 			cell_x--;
-		}else if((c=='j') && cell_y<size - 1) {
+		}else if((c=='j'||c==66) && cell_y<size - 1) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -258,7 +263,7 @@ void Matrix_t::editor (){
 				EDITING = !EDITING;
 			}
 			cell_y++;
-		}else if((c=='k') && cell_y>0) {
+		}else if((c=='k'||c==65) && cell_y>0) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -322,8 +327,10 @@ Matrix_t Matrix_t::Sous_mat(int w_1, int h_1){
 
 double Matrix_t::det(){
 	 double det = 0;
+	 int coffac = 1;
 	 for(int i=0;i<width;i++){
-		det += ptr[i]*Pow(-1,i)*Sous_mat(i,0).det();
+		det += ptr[i]*coffac*Sous_mat(i,0).det();
+		coffac*=-1;
 	 }
 	 if(width==1){
 		return ptr[0];
@@ -333,10 +340,13 @@ double Matrix_t::det(){
 
 Matrix_t Matrix_t::Commatrix(){
  Matrix_t com = Matrix_t(*this);
+ int coffac =1;
  for(int i=0;i<width;i++){
 	for(int j=0;j<height;j++){
-		com.ptr[i+j*width] = Pow(-1,i+j)*Sous_mat(i,j).det();
+		com.ptr[i+j*width] = coffac*Sous_mat(i,j).det();
+		coffac*=-1;
 	}
+	coffac*=-1;
  }
  if(width==1){
 	 com.ptr[0]=1;

@@ -66,6 +66,7 @@ int Matrix_t::get_height(){
 }
 void Matrix_t::v_editor(int h){
 	char c = 'a';
+	char arrow =0;
 	int size = h;
 	int cursor_x = 0;
 	int cursor_y = 0;
@@ -89,6 +90,7 @@ void Matrix_t::v_editor(int h){
 			c = _getch();
 			while(c==91|c==27){
 				c= _getch();
+				arrow=1;
 			}
 			if (c == 's') { 
 				
@@ -114,7 +116,7 @@ void Matrix_t::v_editor(int h){
 				buff_head--;
 				cursor_x--;
 			}
-			else if ((c == 'j' || c==66) && cell_y < size - 1) {
+			else if ((c == 'j' || ((c==66 || c==80)&&arrow==1)) && cell_y < size - 1) {
 				if (EDITING) {
 					sscanf_s(buffer, "%lf", &grid[cell_y]);
 					memset(buffer, '\0', 1024);
@@ -123,7 +125,7 @@ void Matrix_t::v_editor(int h){
 				}
 				cell_y++;
 			}
-			else if ((c == 'k' || c == 65) && cell_y > 0) {
+			else if ((c == 'k' || ((c == 65 || c==72)&&arrow==1)) && cell_y > 0) {
 				if (EDITING) {
 					sscanf_s(buffer, "%lf", &grid[cell_y]);
 					memset(buffer, '\0', 1024);
@@ -163,6 +165,7 @@ void Matrix_t::v_editor(int h){
 }
 void Matrix_t::editor (){
   char c = 'a';
+  char arrow =0;
   int size = width;
   int cursor_x=0;
   int cursor_y=0;
@@ -195,6 +198,7 @@ void Matrix_t::editor (){
 		c= _getch();
 		while(c==91|c==27){
 			c= _getch();
+			arrow=1;
 		}
 		if (c=='s'){
 			sscanf_s(buffer, "%lf", &grid[cell_y][cell_x]);
@@ -237,7 +241,7 @@ void Matrix_t::editor (){
 				buff_head--;
 				cursor_x--;
 			}
-			else if ((c == 'l'||c==67) && cell_x < size - 1) {
+			else if ((c == 'l'||((c==67||c==77)&&arrow==1)) && cell_x < size - 1) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -246,7 +250,7 @@ void Matrix_t::editor (){
 			}
 			cell_x++;
 		}
-			else if ((c == 'h'||c==68) && cell_x > 0) {
+			else if ((c == 'h'||((c==68||c==75)&&arrow==1)) && cell_x > 0) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -255,7 +259,7 @@ void Matrix_t::editor (){
 			}
 			
 			cell_x--;
-		}else if((c=='j'||c==66) && cell_y<size - 1) {
+		}else if((c=='j'||((c==66||c==80)&&arrow==1)) && cell_y<size - 1) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -263,7 +267,7 @@ void Matrix_t::editor (){
 				EDITING = !EDITING;
 			}
 			cell_y++;
-		}else if((c=='k'||c==65) && cell_y>0) {
+		}else if((c=='k'||((c==65||c==72)&&arrow==1)) && cell_y>0) {
 			if(EDITING){
 				sscanf_s(buffer,"%lf",&grid[cell_y][cell_x]);
 				memset(buffer,'\0',1024);
@@ -289,6 +293,7 @@ void Matrix_t::editor (){
 		cursor_y=cell_y;
 		printf("%c",c);
 		gotoxy(cursor_x,cursor_y+3);
+		arrow=0;
 	}
  }
 	ptr =(double*) realloc(ptr,size*size*sizeof(double));

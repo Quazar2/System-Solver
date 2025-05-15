@@ -38,6 +38,7 @@ public:
 	Matrix_t operator/(double d);
 	Matrix_t operator/=(double d);
 	Matrix_t operator+=(const Matrix_t& d);
+	Matrix_t operator-=(const Matrix_t& d);
 	Matrix_t operator+(const Matrix_t& d);
 	Matrix_t operator* ( Matrix_t& d);
 };

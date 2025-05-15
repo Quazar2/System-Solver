@@ -82,7 +82,7 @@ void Matrix_t::v_editor(int h){
 			printf("%.6g\n", grid[j]);
 		}
 		printf("\n");
-	printf("s = confirm  | k = up | j = down | enter = edit \n");
+	printf("s = confirm  | arrows to move \n");
 
 	gotoxy(cursor_x, cursor_y + 3);
 	while (1 == 1) {
@@ -92,7 +92,7 @@ void Matrix_t::v_editor(int h){
 				c= _getch();
 				arrow=1;
 			}
-			if (c == 's') { 
+			if (c == 's'&&size>0) { 
 				
 				sscanf_s(buffer, "%lf", &grid[cell_y]);
 				break; 
@@ -146,10 +146,9 @@ void Matrix_t::v_editor(int h){
 			}
 			
 			printf("\n");
-			printf("s = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+			printf("s = confirm | + = bigger | - = smaller | arrows to move \n");
 			cursor_x = cell_x * 8 + 4;
 			cursor_y = cell_y;
-			printf("%d", c);
 			gotoxy(cursor_x, cursor_y + 3);
 		}
 	}
@@ -192,7 +191,7 @@ void Matrix_t::editor (){
 	  }
 	  printf("\n");
   }
-  printf("\ns = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+  printf("\ns = confirm | + = bigger | - = smaller | arrows to move | enter = edit \n");
   while(1==1){
     if(_kbhit()){
 		c= _getch();
@@ -288,10 +287,9 @@ void Matrix_t::editor (){
 			}
 			printf("\n");
 		}
-		printf("\ns = confirm | + = bigger | - = smaller | h = left | l = right | k = up | j = down | enter = edit \n");
+		printf("\ns = confirm | + = bigger | - = smaller | arrows to move | enter = edit \n");
 		cursor_x=cell_x*8+4;
 		cursor_y=cell_y;
-		printf("%c",c);
 		gotoxy(cursor_x,cursor_y+3);
 		arrow=0;
 	}
@@ -402,6 +400,16 @@ Matrix_t Matrix_t::operator+=(const Matrix_t& d){
 	}
 	return *this;
 }
+Matrix_t Matrix_t::operator-=(const Matrix_t& d){
+	if(width==d.width&height==d.height){
+		for(int i=0;i<width;i++){
+			for(int j=0;j<height;j++){
+				ptr[i+j*width]-=d.ptr[i+j*width];
+			}
+		}
+	}
+	return *this;
+}
 Matrix_t Matrix_t::operator+(const Matrix_t& d){
 	Matrix_t mat  = Matrix_t(*this);
 	mat+=d;
@@ -428,32 +436,64 @@ Matrix_t Matrix_t::Inverse(){
 
 
 Matrix_t Matrix_t::Solve(Matrix_t& b){
-	if(det()>0.00001||det()<-0.00001){
-		Matrix_t inv = Inverse();
-		return inv*b;
-	}else{
-		return NULL;
+	Matrix_t temp = Matrix_t(*this);
+	Matrix_t solut = Matrix_t(1,b.height);
+	for(int i=0;i<b.height;i++){
+		for(int j =0;j<b.height;j++){
+			temp.ptr[i+j*width]= b.ptr[j];
+		}
+		solut.ptr[i]=temp.det()/det();
+		for(int j =0;j<b.height;j++){
+			temp.ptr[i+j*width]= ptr[i+j*width];
+		}
 	}
+	return solut;
 }
 
 Matrix_t Matrix_t::Solve_Pivot(Matrix_t& b){
-	if(det()>0.00001||det()<-0.00001){
-		Matrix_t temp = Matrix_t(*this);
-		Matrix_t solut = Matrix_t(1,b.height);
-		for(int i=0;i<b.height;i++){
-			for(int j =0;j<b.height;j++){
-				temp.ptr[i+j*width]= b.ptr[j];
+	Matrix_t temp = Matrix_t(*this);
+	Matrix_t b_temp = Matrix_t(b);
+	Matrix_t final_b = Matrix_t(b);
+	int* interdicted = new int[width];
+	int* interdicted_y = new int[width];
+	char can =1;
+	double swap =0;
+	double* buffer =new double[width];
+	for(int t=0;t<width;t++){
+		for(int i =0;i<height;i++){
+			can=1;
+			for(int j=0;j<t;j++){
+				if(i==interdicted_y[j]){
+					can=0;
+				}
 			}
-			solut.ptr[i]=temp.det()/det();
-			for(int j =0;j<b.height;j++){
-				temp.ptr[i+j*width]= ptr[i+j*width];
+			if((temp.ptr[t+i*width]>0.00001||temp.ptr[t+i*width]<-0.00001)&&can==1){
+				for(int j=0;j<height;j++){
+					if(j!=i){
+						double coeff=temp.ptr[t+j*width]/temp.ptr[t+i*width];
+						for(int w=t;w<width;w++){
+							temp.ptr[w+j*width]-=(coeff*temp.ptr[w+i*width]);
+						}
+						b_temp.ptr[j]-=coeff*b_temp.ptr[i];
+					}
+				}
+				interdicted_y[t]=i;
+				break;
 			}
 		}
-		return solut;
 	}
-	return NULL;
+	for(int t=width-1;t>-1;t--){
+		final_b.ptr[t]=b_temp.ptr[interdicted_y[t]]/temp.ptr[t+interdicted_y[t]*width];
+	}
+	delete[] interdicted;
+	delete[] interdicted_y;
+	return final_b;
 
-}
+
+	}
+
+
+
 Matrix_t Matrix_t::Propres(){
 	return NULL;
 }
